@@ -1,0 +1,30 @@
+@media (min-width: 992px) {
+	body {
+		background-image: url("omfgdogs.gif");
+		background-repeat: repeat;
+	}
+
+	.no-dogs-message {
+		display: none;
+	}
+}
+
+.dogs-link {
+	position: absolute;
+	bottom: 2px;
+	right: 2px;
+	direction: rtl;
+	font-family: Lobster,sans-serif;
+	font-size: 2em;
+	text-decoration: none;
+	color: #76f014;
+	text-shadow:
+		-1px -1px 0 #000,  
+		1px -1px 0 #000,
+		-1px 1px 0 #000,
+		1px 1px 0 #000;
+}
+
+.dogs-link:hover {
+	color: magenta;
+}
