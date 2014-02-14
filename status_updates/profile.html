@@ -6,13 +6,13 @@
 <title>Fecesbook</title>
 
 <script type="text/javascript">
+	// Format a date as required for message display.
 	Date.prototype.getMessageDateFormatString =  function() {
 		return this.getMonth() + "/" + this.getDay() + "/" + this.getFullYear() +
 				" " + this.getHours() + ":" + this.getMinutes()
 	}
 
 	function onTextFieldChanged() {
-		// Format a date as required for message display.
 		var textField = document.getElementById("msg")
 		var message = textField.value
 		textField.value = "" // Clear input box
