@@ -9,25 +9,25 @@
 	// Format a date as required for message display.
 	Date.prototype.getMessageDateFormatString =  function() {
 		return this.getMonth() + "/" + this.getDay() + "/" + this.getFullYear() +
-				" " + this.getHours() + ":" + this.getMinutes()
-	}
+				" " + this.getHours() + ":" + this.getMinutes();
+	};
 
 	function onTextFieldChanged() {
-		var textField = document.getElementById("msg")
-		var message = textField.value
-		textField.value = "" // Clear input box
-		var dateString = new Date().getMessageDateFormatString()
-		var newElemContent = dateString + " - " + message
+		var textField = document.getElementById("msg");
+		var message = textField.value;
+		textField.value = ""; // Clear input box
+		var dateString = new Date().getMessageDateFormatString();
+		var newElemContent = dateString + " - " + message;
 
 		// We've created the text content, now add it.
-		var statusDiv = document.getElementById("status")
-		var newMessageElem = document.createElement("p")
-		newMessageElem.textContent = newElemContent
+		var statusDiv = document.getElementById("status");
+		var newMessageElem = document.createElement("p");
+		newMessageElem.textContent = newElemContent;
 		if (statusDiv.hasChildNodes()) {
-			statusDiv.insertBefore(newMessageElem, statusDiv.firstChild)	
+			statusDiv.insertBefore(newMessageElem, statusDiv.firstChild);	
 		}
 		else {
-			statusDiv.appendChild(newMessageElem)
+			statusDiv.appendChild(newMessageElem);
 		}
 	}
 </script>
