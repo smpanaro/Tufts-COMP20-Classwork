@@ -5,6 +5,11 @@ function onPageLoaded() {
 function draw() {
 	var canvas = document.getElementById('game');
 	var ctx = canvas.getContext('2d');
+	// We don't want interpolation with the sprites.
+	ctx.imageSmoothingEnabled = false;
+	ctx.mozImageSmoothingEnabled = false;
+	ctx.oImageSmoothingEnabled = false;
+	ctx.webkitImageSmoothingEnabled = false;
 
 	// Fill the background.
 	ctx.fillStyle = "#87CEEB";
