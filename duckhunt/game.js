@@ -5,6 +5,7 @@ function onPageLoaded() {
 function draw() {
 	var canvas = document.getElementById('game');
 	var ctx = canvas.getContext('2d');
+	
 	// We don't want interpolation with the sprites.
 	ctx.imageSmoothingEnabled = false;
 	ctx.mozImageSmoothingEnabled = false;
@@ -16,7 +17,7 @@ function draw() {
 	ctx.fill();
 
 	// Create the spritesheet image here as opposed to inside of the drawing functions.
-	// Otherwise the order of in which things are drawn is indeterminate since you are
+	// Otherwise the order in which things are drawn is indeterminate since you are
 	// waiting to load the spritesheet each time.
 	var spriteSheet = new Image();
 	spriteSheet.src = "assets/duckhunt.png"
@@ -36,15 +37,18 @@ function draw() {
 // Prevents having to keep track of the specific offsets.
 // Everything is scaled with respect to the canvas' width.
 
-// Draw the background image scaled to the width but offset so that it sits at the bottom of the frame.
+// Each function takes at least 2 parameters:
+// ctx - the context to draw in.
+// spriteSheet - the Image object that is the spritesheet
+
+// Draw the background image scaled to the width but offset vertically so that it sits at the bottom of the frame.
 function drawBackground(ctx, spriteSheet) {
 	var scaledHeight = 500*(ctx.canvas.width/900);
 	ctx.drawImage(spriteSheet, 0, 401, 900, 500, 0, ctx.canvas.height - scaledHeight, ctx.canvas.width, scaledHeight);
 }
 
-// ctx - the context to draw in.
 function drawTree(ctx, spriteSheet) {
-	var scaleFactor = ctx.canvas.width / 900; // Scale with the canvas.
+	var scaleFactor = ctx.canvas.width / 900; // Scale with the width of the canvas.
 	var visualAdjustFactor = 2.5;	// Scale so that things look visually pleasing.
 
 	var sx = 0;
@@ -61,11 +65,11 @@ function drawTree(ctx, spriteSheet) {
 	ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
-// ctx - the context to draw in.
 // x - the percent of the dog's x-position in the frame. 0 is at the extreme left, 100 the extreme right.
+//     negative values and values over 100 are acceptable.
 function drawSniffingDog(ctx, spriteSheet, x) {
 
-	var scaleFactor = ctx.canvas.width / 900; // Scale with the canvas.
+	var scaleFactor = ctx.canvas.width / 900; // Scale with the width of the canvas.
 	var visualAdjustFactor = 2.5;	// Scale so that things look visually pleasing.
 
 	var sx = 0;
@@ -79,16 +83,14 @@ function drawSniffingDog(ctx, spriteSheet, x) {
 	// Last term is an offset that handles when height of canvas is not same as the background height.
 	var dy = 185*scaleFactor*visualAdjustFactor - dh + (ctx.canvas.height - 500*(ctx.canvas.width/900));
 
-
 	ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
-// ctx - the context to draw in
 // x - the percent of the bird's x-position in the frame.
 // y - the percent of the bird's y-position between the top of the grass and the top of the canvas
 function drawBird(ctx, spriteSheet, x, y) {
 
-	var scaleFactor = ctx.canvas.width / 900; // Scale with the canvas.
+	var scaleFactor = ctx.canvas.width / 900; // Scale with the width of the canvas.
 	var visualAdjustFactor = 2.5;	// Scale so that things look visually pleasing.
 
 	var sx = 4;
@@ -99,7 +101,6 @@ function drawBird(ctx, spriteSheet, x, y) {
 	var dh = sh*scaleFactor*visualAdjustFactor;
 	var dx = (x/100)*(ctx.canvas.width - dw);
 	var dy = (y/100)*(ctx.canvas.height - 130*scaleFactor - dh); // 130 is the height to the top of the grass
-
 
 	ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
 }
