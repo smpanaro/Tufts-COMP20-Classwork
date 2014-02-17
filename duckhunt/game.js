@@ -10,14 +10,21 @@ function draw() {
 	ctx.fillStyle = "#87CEEB";
 	ctx.fill();
 
-	// New drawings are inserted behind old ones.
-	var numBirds = 5;
-	for (var i = 0; i < numBirds; i++) {
-		drawBird(ctx, Math.random()*100, Math.random()*100);
+	// Create the spritesheet image here as opposed to inside of the drawing functions.
+	// Otherwise the order of in which things are drawn is indeterminate since you are
+	// waiting to load the spritesheet each time.
+	var spriteSheet = new Image();
+	spriteSheet.src = "assets/duckhunt.png"
+	spriteSheet.onload = function() {
+		// New drawings are inserted in front of old ones.
+		drawTree(ctx, spriteSheet);
+		drawBackground(ctx, spriteSheet);
+		var numBirds = 5;
+		for (var i = 0; i < numBirds; i++) {
+			drawBird(ctx, spriteSheet, Math.random()*100, Math.random()*100);
+		};
+		drawSniffingDog(ctx, spriteSheet, 50);
 	};
-	drawSniffingDog(ctx, 50);
-	drawBackground(ctx);
-	drawTree(ctx);
 }
 
 // Functions to draw sprites on the canvas. 
@@ -25,21 +32,13 @@ function draw() {
 // Everything is scaled with respect to the canvas' width.
 
 // Draw the background image scaled to the width but offset so that it sits at the bottom of the frame.
-function drawBackground(ctx) {
-	var spriteSheet = new Image();
-	spriteSheet.src = "assets/duckhunt.png"
-
+function drawBackground(ctx, spriteSheet) {
 	var scaledHeight = 500*(ctx.canvas.width/900);
-	spriteSheet.onload = function() {
-		ctx.drawImage(spriteSheet, 0, 401, 900, 500, 0, ctx.canvas.height - scaledHeight, ctx.canvas.width, scaledHeight);
-	};
+	ctx.drawImage(spriteSheet, 0, 401, 900, 500, 0, ctx.canvas.height - scaledHeight, ctx.canvas.width, scaledHeight);
 }
 
 // ctx - the context to draw in.
-function drawTree(ctx) {
-	var spriteSheet = new Image();
-	spriteSheet.src = "assets/duckhunt.png"
-
+function drawTree(ctx, spriteSheet) {
 	var scaleFactor = ctx.canvas.width / 900; // Scale with the canvas.
 	var visualAdjustFactor = 2.5;	// Scale so that things look visually pleasing.
 
@@ -54,16 +53,12 @@ function drawTree(ctx) {
 	// Last term is an offset that handles when height of canvas is not same as the background height.
 	var dy = 165*scaleFactor*visualAdjustFactor - dh + (ctx.canvas.height - 500*(ctx.canvas.width/900));
 
-	spriteSheet.onload = function() {
-		ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
-	};
+	ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
 // ctx - the context to draw in.
 // x - the percent of the dog's x-position in the frame. 0 is at the extreme left, 100 the extreme right.
-function drawSniffingDog(ctx, x) {
-	var spriteSheet = new Image();
-	spriteSheet.src = "assets/duckhunt.png"
+function drawSniffingDog(ctx, spriteSheet, x) {
 
 	var scaleFactor = ctx.canvas.width / 900; // Scale with the canvas.
 	var visualAdjustFactor = 2.5;	// Scale so that things look visually pleasing.
@@ -79,17 +74,14 @@ function drawSniffingDog(ctx, x) {
 	// Last term is an offset that handles when height of canvas is not same as the background height.
 	var dy = 185*scaleFactor*visualAdjustFactor - dh + (ctx.canvas.height - 500*(ctx.canvas.width/900));
 
-	spriteSheet.onload = function() {
-		ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
-	};
+
+	ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
 // ctx - the context to draw in
 // x - the percent of the bird's x-position in the frame.
 // y - the percent of the bird's y-position between the top of the grass and the top of the canvas
-function drawBird(ctx, x, y) {
-	var spriteSheet = new Image();
-	spriteSheet.src = "assets/duckhunt.png"
+function drawBird(ctx, spriteSheet, x, y) {
 
 	var scaleFactor = ctx.canvas.width / 900; // Scale with the canvas.
 	var visualAdjustFactor = 2.5;	// Scale so that things look visually pleasing.
@@ -103,7 +95,6 @@ function drawBird(ctx, x, y) {
 	var dx = (x/100)*(ctx.canvas.width - dw);
 	var dy = (y/100)*(ctx.canvas.height - 130*scaleFactor - dh); // 130 is the height to the top of the grass
 
-	spriteSheet.onload = function() {
-		ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
-	};
+
+	ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
 }
