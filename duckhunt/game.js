@@ -4,6 +4,10 @@ function onPageLoaded() {
 
 function draw() {
 	var canvas = document.getElementById('game');
+	if (!canvas.getContext) {
+		alert("Sorry! Canvas is not supported in your browser.");
+		return;
+	}
 	var ctx = canvas.getContext('2d');
 	
 	// We don't want interpolation with the sprites.
