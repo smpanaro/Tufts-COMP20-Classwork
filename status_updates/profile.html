@@ -8,7 +8,7 @@
 <script type="text/javascript">
 	// Format a date as required for message display.
 	Date.prototype.getMessageDateFormatString =  function() {
-		return this.getMonth() + "/" + this.getDay() + "/" + this.getFullYear() +
+		return (this.getMonth()+1) + "/" + this.getDate() + "/" + this.getFullYear() +
 				" " + this.getHours() + ":" + this.getMinutes();
 	};
 
