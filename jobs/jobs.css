@@ -1,0 +1,21 @@
+html {
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	background-color: lightblue;
+}
+
+.job {
+	background-color: lightgray;
+	border: 1px solid black;
+	border-radius: 5px;
+	padding: .5em 1em;
+	margin: 1em 0;
+	width: 20em;
+}
+
+.job-detail {
+	margin: .5em 0;
+}
+
+.job-detail-key {
+	font-weight: bold;
+}
