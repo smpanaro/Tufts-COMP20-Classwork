@@ -8,7 +8,7 @@ import sys
 import json
 from math import radians, cos, sin, asin, sqrt
 
-DEBUG = True
+DEBUG = False
 
 def debug(msg):
     if not DEBUG: return
@@ -20,7 +20,7 @@ def parse_lines(path):
         return
     with open(path, 'rb') as f:
         # Override parse float - float(num_str) loses a lot of precision.
-        # Since we're not doing any calculations
+        # Since we're not doing any calculations, this is okay.
         j = json.load(f, parse_float=lambda x:x)
 
     # line name mapped to list of lists of coordinates
@@ -53,7 +53,7 @@ def print_polyline_coords(coords, newlines=True):
     line_end = "\n" if newlines else " "
     tab = "\t" if newlines else ""
 
-    print("[new google.maps.LatLng({lat},{lon}),".format(lat=coords[-1][1], lon=coords[-1][0]), end=line_end)
+    print("[new google.maps.LatLng({lat},{lon}),".format(lat=coords[0][1], lon=coords[0][0]), end=line_end)
     for c in coords[1:-1]:
         print("{tab}new google.maps.LatLng({lat},{lon}),".format(lat=c[1], lon=c[0], tab=tab), end=line_end)
     print("{tab}new google.maps.LatLng({lat},{lon})],".format(lat=coords[-1][1], lon=coords[-1][0], tab=tab))
