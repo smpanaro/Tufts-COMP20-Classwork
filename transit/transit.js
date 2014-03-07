@@ -19,7 +19,6 @@ var lineToColor = {
 	"green": "#008150",
 	"silver": "#9A9C9D"
 };
-console.log(lineToCoordLists);
 var map;
 
 function onPageLoad() {
@@ -28,6 +27,11 @@ function onPageLoad() {
 	  zoom: 14
 	};
 	map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+
+	makeRodeoRequest(function(responseText) {
+		// console.log("we done it.");
+		// console.log(JSON.parse(responseText));
+	});
 
 	displayAllLines();
 	displayAllStations();
@@ -86,4 +90,48 @@ function displayAllStations() {
 	for (lineName in lineToCoordLists) {
 		displayTStations(lineName);
 	}
+}
+
+// Make a request to the rodeo url. We know that sometimes it 500s, so retry in that case.
+function makeRodeoRequest(successCallback) {
+	var rodeoUrl = "http://mbtamap.herokuapp.com/mapper/rodeo.json";
+
+	var request;
+
+	// Create a request, even if we're in IE.
+	try {
+	  request = new XMLHttpRequest();
+	}
+	catch (ms1) {
+		try {
+			request = new ActiveXObject("Msxml2.XMLHTTP");
+		}
+		catch (ms2) {
+			try {
+				request = new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			catch (ex) {
+				request = null;
+			}
+		}
+	}
+	if (request == null) {
+		alert("Error creating request object --Ajax not supported?");
+		return;
+	}
+
+	request.open('get', rodeoUrl);
+	request.onreadystatechange = function() {
+		if (request.readyState == 4) {
+			if(request.status == 200) {
+				successCallback(request.responseText);
+			}
+			// We are expecting the server to err sometimes, so retry when that happens.
+			else if (request.status == 500) {
+				// console.log("Request failed with status code: " + request.status + "\nbody: " + request.responseText);
+				setTimeout(makeRodeoRequest(successCallback), 100);
+			}
+		}
+	};
+	request.send(null);
 }
