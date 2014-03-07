@@ -1,3 +1,36 @@
 html { height: 100% }
 body { height: 100%; margin: 0; padding: 0 }
 #map-canvas { height: 100% }
+
+#info-content-template {
+	display: none;
+}
+
+.info-content {
+	font-family: Helvetica, Arial, sans-serif;
+}
+
+.direction-group {
+	float: left;
+	margin-right: 1em;
+}
+
+.station-title {
+	font-weight: bold;
+}
+
+.destination-direction {
+	font-size: 0.7em;
+	font-weight: bold;
+	margin-bottom: 0;
+}
+
+.destination-name {
+	margin-top: 0;
+	font-size: 0.9em;
+}
+
+.destination-time {
+	font-size: 0.85em;
+	margin: .2em 0;
+}
