@@ -5,6 +5,13 @@ var lineToCoordLists = {
 	"green": greenLineCoordinates,
 	"silver": silverLineCoordinates
 };
+var lineToStations = {
+	"red": redLineStations,
+	"blue": blueLineStations,
+	"orange": orangeLineStations,
+	"green": greenLineStations,
+	"silver": silverLineStations
+};
 var lineToColor = {
 	"red": "#FA2D27",
 	"blue": "#2F5DA6",
@@ -23,6 +30,7 @@ function onPageLoad() {
 	map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 
 	displayAllLines();
+	displayAllStations();
 }
 
 function displayTLine(lineName) {
@@ -52,8 +60,25 @@ function displayTLine(lineName) {
 	}
 }
 
+function displayTStations(lineName) {
+	for (var i = 0; i < lineToStations[lineName].length; i++) {
+		var marker = new google.maps.Marker({
+			position: lineToStations[lineName][i]['loc'],
+			map: map,
+			title: lineToStations[lineName][i]['name']
+		});
+		marker.setMap(map);
+	}
+}
+
 function displayAllLines() {
 	for (lineName in lineToCoordLists) {
 		displayTLine(lineName);
+	}
+}
+
+function displayAllStations() {
+	for (lineName in lineToCoordLists) {
+		displayTStations(lineName);
 	}
 }
