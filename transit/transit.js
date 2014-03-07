@@ -37,7 +37,7 @@ function displayTLine(lineName) {
 	var colorWeight = 2.7;
 
 	for (var i = 0; i < lineToCoordLists[lineName].length; i++) {
-		if (lineName == "silver") {
+		if (lineName == "silver" || lineName == "orange") {
 			var subwayBorderPath = new google.maps.Polyline({
 				path: lineToCoordLists[lineName][i],
 				geodesic: true,
@@ -53,7 +53,7 @@ function displayTLine(lineName) {
 			geodesic: true,
 			strokeColor: lineToColor[lineName],
 			strokeOpacity: 1.0,
-			strokeWeight: (lineName == "silver") ? colorWeight - 0.1 : colorWeight
+			strokeWeight: (lineName == "silver" || lineName == "orange") ? colorWeight - 1 : colorWeight
 		});
 
 		subwayPath.setMap(map);
@@ -61,11 +61,16 @@ function displayTLine(lineName) {
 }
 
 function displayTStations(lineName) {
+	var tIcon = {
+		url: "t-marker.png",
+		scaledSize: new google.maps.Size(20, 40)
+	};
 	for (var i = 0; i < lineToStations[lineName].length; i++) {
 		var marker = new google.maps.Marker({
 			position: lineToStations[lineName][i]['loc'],
 			map: map,
-			title: lineToStations[lineName][i]['name']
+			title: lineToStations[lineName][i]['name'],
+			icon: tIcon
 		});
 		marker.setMap(map);
 	}
