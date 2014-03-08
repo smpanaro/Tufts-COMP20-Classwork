@@ -318,7 +318,7 @@ var silverLineStations = [
 {'name':'Herald Street', 'loc':new google.maps.LatLng(42.34639599701535,-71.064607513366781)},
 {'name':'Worcester Square', 'loc':new google.maps.LatLng(42.337555034770247,-71.07539890802552)},
 {'name':'Melnea Cass Blvd', 'loc':new google.maps.LatLng(42.332701674167176,-71.081198813759954)},
-{'name':'Tuffs Medical Center', 'loc':new google.maps.LatLng(42.349610630244165,-71.063692051211547)},
+{'name':'Tufts Medical Center', 'loc':new google.maps.LatLng(42.349610630244165,-71.063692051211547)},
 {'name':'Northern Avenue at Tide Street', 'loc':new google.maps.LatLng(42.345103498637762,-71.031781832637705)},
 {'name':'Northern Avenue at Harbor Street', 'loc':new google.maps.LatLng(42.346588439160804,-71.035114273003472)},
 {'name':'Airport Terminal B1', 'loc':new google.maps.LatLng(42.361339647153656,-71.018543536072045)},
@@ -347,7 +347,7 @@ var silverLineStations = [
 {'name':'Union Park Street', 'loc':new google.maps.LatLng(42.341370107123659,-71.069611812200449)},
 {'name':'E.Berkeley Street', 'loc':new google.maps.LatLng(42.344133930202247,-71.065794866530155)},
 {'name':'Herald Street', 'loc':new google.maps.LatLng(42.346411693024876,-71.064719621853797)},
-{'name':'Tuffs Medical Center', 'loc':new google.maps.LatLng(42.349639963191905,-71.063807055526084)},
+{'name':'Tufts Medical Center', 'loc':new google.maps.LatLng(42.349639963191905,-71.063807055526084)},
 {'name':'Black Falcon corner stop', 'loc':new google.maps.LatLng(42.344449825245157,-71.0271474414034)},
 ];
 var redLineStations = [

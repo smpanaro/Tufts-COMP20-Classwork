@@ -66,7 +66,7 @@ def parse_stations(path):
                 station_coords[line_name] = []
 
             coords = geometry['coordinates']
-            station = props['STATION']
+            station = fixStationName(props['STATION'])
             station_coords[line_name].append({
                 "name" : station,
                 "loc" : coords
@@ -124,6 +124,11 @@ def multiline_list_to_pair_list(arr):
         for child in arr:
             to_ret.extend(multiline_list_to_pair_list(child))
     return to_ret
+
+# There is a spelling error (wow!) in the MBTA data.
+# This fixes them it.
+def fixStationName(name):
+    return name.replace("Tuffs", "Tufts")
 
 def main():
     parser = argparse.ArgumentParser()

@@ -23,6 +23,11 @@ var line;
 var schedule;
 var map;
 
+// Set debug to true, and debugLine to "orange", "red", or "blue"
+// to force the appearance of that line.
+var debug = false;
+var debugLine = "orange";
+
 function onPageLoad() {
 	var mapOptions = {
 	  center: new google.maps.LatLng(42.3581, -71.0636),
@@ -81,7 +86,7 @@ function displayTStations(lineName) {
 	});
 
 	for (var i = 0; i < lineToStations[lineName].length; i++) {
-		var stationName = lineToStations[lineName][i]['name'];
+		var stationName = fixStationName(lineToStations[lineName][i]['name']);
 
 		var marker = new google.maps.Marker({
 			position: lineToStations[lineName][i]['loc'],
@@ -143,6 +148,10 @@ function makeRodeoRequest(successCallback) {
 	request.onreadystatechange = function() {
 		if (request.readyState == 4) {
 			if(request.status == 200) {
+				if (debug && JSON.parse(request.responseText)['line'] != debugLine) {
+					self.setTimeout(makeRodeoRequest(successCallback), 100);
+					return;
+				}
 				successCallback(request.responseText);
 			}
 			// We are expecting the server to err sometimes, so retry when that happens.
@@ -197,23 +206,27 @@ function generateInfoWindowContent(stationName) {
 		}
 		content.appendChild(destGroup);
 	}
+	if (Object.keys(arrivalTimes).length > 0) {
+		var noDataElem = getFirstElementByClass(content, 'p', 'no-data-message');
+		content.removeChild(noDataElem);
+	}
+
 	return content.outerHTML;
 }
 
 // "destination" => [time 1 (in seconds), time 2,...]
 function getUpcomingArrivalTimes(stationName) {
+	console.log("get arrivals for: " + stationName);
 	var arrivalTimes = {};
 	for (var tripIdx = 0; tripIdx < schedule.length; tripIdx++) {
 		var trip = schedule[tripIdx];
-		var dest = trip['Destination'];
+		var dest = fixStationName(trip['Destination']);
+		// console.log("dest: " + dest)
 
 		for (var stopIdx = 0; stopIdx < trip['Predictions'].length; stopIdx++) {
 			var stop = trip['Predictions'][stopIdx];
-			// See if the station starts with desired stationName - there's a few discrepancies:
-			// "Central" vs. "Central Square"
-			// Tufts is spelled wrong (Tuffs) too. (wow)
-			// TODO: pick a consistent station naming scheme
-			if (stop['Stop'].slice(0, stationName.length) == stationName) {
+			var stopName = fixStationName(stop['Stop']);
+			if (stopName == stationName) {
 				if (arrivalTimes.hasOwnProperty(dest) == false) arrivalTimes[dest] = [];
 				arrivalTimes[dest].push(stop['Seconds']);
 			}
@@ -236,17 +249,16 @@ function getFirstElementByClass(node, tagName, className) {
 	return null;
 }
 
-function minuteStringFromSeconds(sec) {
-	var str = "";
-	if (sec < 0) {
-		str += "-";
-		sec *= -1;
+function minuteStringFromSeconds(totalSeconds) {
+	var sign = ""
+	if (totalSeconds < 0) {
+		sign = "-";
+		totalSeconds *= -1;
 	}
 
-	min = Math.floor(sec/60);
-	s = sec % 60
-	str += min + ":" + ((s<10) ? "0" : "") + s
-	return str;
+	min = Math.floor(totalSeconds/60);
+	secs = totalSeconds % 60
+	return sign + min + ":" + ((secs<10) ? "0" : "") + secs
 }
 
 // Returns "inbound", "outbound" or "neither"
@@ -261,7 +273,7 @@ function getDirection(lineName, stationName, destinationName) {
 	var outbound = "outbound";
 	var neither = "neither";
 
-	var halfOfRedLineStops = ['Alewife', 'Davis', 'Porter', 'Harvard', 'Central', 'Kendall', 'Charles/MGH', 'Park Street', 'Downtown Crossing'];
+	var halfOfRedLineStops = ['Alewife', 'Davis', 'Porter', 'Harvard', 'Central', 'Kendall/MIT', 'Charles/MGH', 'Park Street', 'Downtown Crossing'];
 
 	if (lineName.toUpperCase() == "RED") {
 		console.log("stat: " + stationName)
@@ -281,7 +293,7 @@ function getDirection(lineName, stationName, destinationName) {
 		else return neither;
 	}
 
-	var halfOfOrangeLineStops = ['Oak Grove', 'Malden Center', 'Wellington', 'Sullivan Square', 'Community College', 'North', 'Haymarket', 'State', 'Downtown Crossing'];
+	var halfOfOrangeLineStops = ['Oak Grove', 'Malden Center', 'Wellington', 'Sullivan', 'Community College', 'North Station', 'Haymarket', 'State', 'Downtown Crossing'];
 	if (lineName.toUpperCase() == "ORANGE") {
 		console.log("stat: " + stationName)
 		var loc = halfOfOrangeLineStops.indexOf(stationName);
@@ -292,4 +304,16 @@ function getDirection(lineName, stationName, destinationName) {
 	}
 
 	return neither;
+}
+
+// Fix inconsistencies between different sources of data for T station names.
+// Known inconsistencies:
+// - Sullivan, Jackson have a trailing space
+// - Central, Porter, Harvard, Jackson, Sullivan sometimes have "Square" attached, this is removed.
+// - State Street => State
+function fixStationName(name) {
+	if (name == "State Street") name = "State";
+	if (name == "Tufts Medical") name = "Tufts Medical Center";
+	if (name == "Massachusetts Ave") name = "Mass Ave";
+	return name.replace("Square", "").trim();
 }
