@@ -17,10 +17,11 @@ body { height: 100%; margin: 0; padding: 0 }
 
 .station-title {
 	font-weight: bold;
+	margin-bottom: 0;
 }
 
 .destination-direction {
-	font-size: 0.7em;
+	font-size: 0.8em;
 	font-weight: bold;
 	margin-bottom: 0;
 }

@@ -49,9 +49,6 @@ function onPageLoad() {
 	});
 
 	getUserLocation(displayUser);
-
-	// displayAllLines();
-	// displayAllStations();
 }
 
 function displayTLine(lineName) {
@@ -162,7 +159,6 @@ function makeRodeoRequest(successCallback) {
 			}
 			// We are expecting the server to err sometimes, so retry when that happens.
 			else if (request.status == 500) {
-				// console.log("Request failed with status code: " + request.status + "\nbody: " + request.responseText);
 				setTimeout(makeRodeoRequest(successCallback), 100);
 			}
 		}
@@ -232,12 +228,10 @@ function generateInfoWindowContent(stationName) {
 
 // "destination" => [time 1 (in seconds), time 2,...]
 function getUpcomingArrivalTimes(stationName) {
-	console.log("get arrivals for: " + stationName);
 	var arrivalTimes = {};
 	for (var tripIdx = 0; tripIdx < schedule.length; tripIdx++) {
 		var trip = schedule[tripIdx];
 		var dest = fixStationName(trip['Destination']);
-		// console.log("dest: " + dest)
 
 		for (var stopIdx = 0; stopIdx < trip['Predictions'].length; stopIdx++) {
 			var stop = trip['Predictions'][stopIdx];
@@ -292,9 +286,7 @@ function getDirection(lineName, stationName, destinationName) {
 	var halfOfRedLineStops = ['Alewife', 'Davis', 'Porter', 'Harvard', 'Central', 'Kendall/MIT', 'Charles/MGH', 'Park Street', 'Downtown Crossing'];
 
 	if (lineName.toUpperCase() == "RED") {
-		console.log("stat: " + stationName)
 		var loc = halfOfRedLineStops.indexOf(stationName);
-		console.log(loc)
 		if (loc == -1) return (destinationName == 'Alewife') ? inbound : outbound;
 		else if (loc < halfOfRedLineStops.indexOf('Park Street')) return (destinationName == "Alewife") ? outbound : inbound;
 		else return neither;
@@ -302,18 +294,14 @@ function getDirection(lineName, stationName, destinationName) {
 
 	var halfOfBlueLineStops = ['Bowdoin', 'Government Center'];
 	if (lineName.toUpperCase() == "BLUE") {
-		console.log("stat: " + stationName)
 		var loc = halfOfBlueLineStops.indexOf(stationName);
-		console.log(loc)
 		if (loc == -1) return (destinationName == 'Bowdoin') ? inbound : outbound;
 		else return neither;
 	}
 
 	var halfOfOrangeLineStops = ['Oak Grove', 'Malden Center', 'Wellington', 'Sullivan', 'Community College', 'North Station', 'Haymarket', 'State', 'Downtown Crossing'];
 	if (lineName.toUpperCase() == "ORANGE") {
-		console.log("stat: " + stationName)
 		var loc = halfOfOrangeLineStops.indexOf(stationName);
-		console.log(loc)
 		if (loc == -1) return (destinationName == 'Oak Grove') ? inbound : outbound;
 		else if (loc < halfOfOrangeLineStops.indexOf('Downtown Crossing')) return (destinationName == "Oak Grove") ? outbound : inbound;
 		else return neither;
