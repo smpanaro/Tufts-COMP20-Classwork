@@ -14,5 +14,5 @@ I did not collaborate with anyone on this assignment, however I used several onl
 I spent approximately 12 hours working on this project. (Although about half of that was spent working on the files in the data_gen/ folder - see below.)  
 
 ### What else is in here?
-The data_gen/ folder contains data and scripts to generate the constants (detailed subway routes and station locations) found in transit-constants.js. See the [README](/data_gen/) in the data_gen/ folder for more specifics.  
+The data_gen/ folder contains data and scripts to generate the constants (detailed subway routes and station locations) found in transit-constants.js. See the [README](/transit/data_gen/) in the data_gen/ folder for more specifics.  
 This data can be displayed using the `displayAllLines()` and `displayAllStations()` functions. 
