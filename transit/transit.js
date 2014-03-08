@@ -21,7 +21,11 @@ var lineToColor = {
 };
 var line;
 var schedule;
+
+var infoWindow;
 var map;
+
+var userLoc;
 
 // Set debug to true, and debugLine to "orange", "red", or "blue"
 // to force the appearance of that line.
@@ -43,6 +47,8 @@ function onPageLoad() {
 		displayTLine(rodeoObj['line']);
 		displayTStations(rodeoObj['line']);
 	});
+
+	getUserLocation(displayUser);
 
 	// displayAllLines();
 	// displayAllStations();
@@ -81,7 +87,7 @@ function displayTStations(lineName) {
 		scaledSize: new google.maps.Size(20, 40)
 	};
 
-	var infoWindow = new google.maps.InfoWindow({
+	infoWindow = new google.maps.InfoWindow({
 		content: ""
 	});
 
@@ -98,7 +104,7 @@ function displayTStations(lineName) {
 
 		google.maps.event.addListener(marker, 'click', function() {
 			infoWindow.close();
-			infoWindow.setContent(generateInfoWindowContent(this.title)); // title is the station name
+			infoWindow.setContent(generateInfoWindowContent(this.title)); // title is the station name or "user"
 			infoWindow.open(map,this);
 		});
 	}
@@ -166,6 +172,16 @@ function makeRodeoRequest(successCallback) {
 
 // Generate an DOM tree containing the information to be displayed in the info window.
 function generateInfoWindowContent(stationName) {
+	if (stationName == "user") {
+		var closestStation = findClosestStation(line, userLoc.lat(), userLoc.lng());
+		var c = "<p>I am here at: " + userLoc.lat().toFixed(8) + ", " + userLoc.lng().toFixed(8) + "</p>";
+		c += "<p>The closest T station is: " + closestStation['name'];
+		c += " which is " +
+			calcHaversine(userLoc.lat(), userLoc.lng(), closestStation['loc'].lat(), closestStation['loc'].lng()).toFixed(3)
+			+ " miles away.</p>";
+		return c;
+	}
+
 	var content = document.getElementById('info-content-template').cloneNode(true);
 	content.removeAttribute('id');
 
@@ -316,4 +332,82 @@ function fixStationName(name) {
 	if (name == "Tufts Medical") name = "Tufts Medical Center";
 	if (name == "Massachusetts Ave") name = "Mass Ave";
 	return name.replace("Square", "").trim();
+}
+
+function getUserLocation(successCallback) {
+	if (navigator.geolocation) { // the navigator.geolocation object is supported on your browser
+		navigator.geolocation.getCurrentPosition(function(position) {
+			lat = position.coords.latitude;
+			lon = position.coords.longitude;
+			successCallback(lat, lon);
+		});
+	}
+	else {
+		alert("Geolocation is not supported by your web browser.  What a shame!");
+	}
+}
+
+function displayUser(lat, lon) {
+	userLoc = new google.maps.LatLng(lat, lon);
+	map.panTo(userLoc);
+
+	var marker = new google.maps.Marker({
+		position: userLoc,
+		map: map,
+		title: "user"
+	});
+	marker.setMap(map);
+
+	google.maps.event.addListener(marker, 'click', function() {
+		infoWindow.close();
+		infoWindow.setContent(generateInfoWindowContent(this.title)); // title is the station name or "user"
+		infoWindow.open(map,this);
+	});
+
+	openUserInfoWindow(map, marker);
+
+}
+
+function openUserInfoWindow(map, marker) {
+	if (typeof line === 'undefined') {
+		setTimeout(function() { openUserInfoWindow(map, marker) }, 1000);
+	}
+	else {
+		infoWindow.setContent(generateInfoWindowContent("user"));
+		infoWindow.open(map, marker);
+	}
+}
+
+// Returns distance in miles.
+function calcHaversine(lat1, lon1, lat2, lon2) {
+	function toRad(x) {
+		return x * Math.PI / 180;
+	}
+
+    var R = 6371; // km
+    var dLat = toRad(lat2-lat1);
+    var dLon = toRad(lon2-lon1);
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c;
+
+    return d*0.621371192; // convert from km to miles
+}
+
+function findClosestStation(line, lat, lon) {
+	var stations = lineToStations[line];
+
+	var closest_dist = 100000000;
+	var closest_station = {};
+	for (var i = 0; i < stations.length; i++) {
+		var s = stations[i];
+		var dist = calcHaversine(s['loc'].lat(), s['loc'].lng(), lat, lon);
+		if (dist < closest_dist) {
+			closest_station = s;
+			closest_dist = dist;
+		}
+	}
+	return closest_station;
 }
