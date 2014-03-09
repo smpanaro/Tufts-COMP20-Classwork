@@ -240,6 +240,9 @@ function updateInfoWindowArrivalTimes(stationName) {
 
 	var arrivalTimes = getUpcomingArrivalTimes(stationName);
 	var content = infoWindow.getContent();
+	// getContent() returns what it was passed, either a string or a node.
+	// If we get a node, we can update it - otherwise we can't.
+	if (typeof(content) === 'string') return;
 
 	var directionGroupElems = getAllElementsByClass(content, 'div', 'direction-group');
 	for (var groupIdx = 0; groupIdx < directionGroupElems.length; groupIdx++) {
