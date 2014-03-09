@@ -21,6 +21,7 @@ var lineToColor = {
 };
 var line;
 var schedule;
+var scheduleFetchedAt;
 
 var infoWindow;
 var map;
@@ -43,6 +44,7 @@ function onPageLoad() {
 		var rodeoObj = JSON.parse(responseText);
 		line = rodeoObj['line'];
 		schedule = rodeoObj['schedule'];
+		scheduleFetchedAt = Date.now();
 
 		displayTLine(rodeoObj['line']);
 		displayTStations(rodeoObj['line']);
@@ -78,14 +80,17 @@ function displayTLine(lineName) {
 	}
 }
 
+var infoWindowInterval;
 function displayTStations(lineName) {
 	var tIcon = {
 		url: "t-marker.png",
 		scaledSize: new google.maps.Size(20, 40)
 	};
 
-	infoWindow = new google.maps.InfoWindow({
-		content: ""
+	infoWindow = new google.maps.InfoWindow({});
+
+	google.maps.event.addListener(infoWindow, 'closeclick', function() {
+		clearInterval(infoWindowInterval);
 	});
 
 	for (var i = 0; i < lineToStations[lineName].length; i++) {
@@ -100,9 +105,16 @@ function displayTStations(lineName) {
 		marker.setMap(map);
 
 		google.maps.event.addListener(marker, 'click', function() {
+			clearInterval(infoWindowInterval);
+
 			infoWindow.close();
 			infoWindow.setContent(generateInfoWindowContent(this.title)); // title is the station name or "user"
 			infoWindow.open(map,this);
+
+			var station = this.title;
+			infoWindowInterval = setInterval(function() {
+				updateInfoWindowArrivalTimes(station);
+			}, 1000);
 		});
 	}
 }
@@ -171,6 +183,8 @@ function generateInfoWindowContent(stationName) {
 		return generateUserInfoWindowContent();
 	}
 
+	var elapsedSecs = (Date.now() - scheduleFetchedAt)/1000;
+
 	var content = document.getElementById('info-content-template').cloneNode(true);
 	content.removeAttribute('id');
 
@@ -181,6 +195,7 @@ function generateInfoWindowContent(stationName) {
 
 	var directionGroupTemplate = content.getElementsByTagName('div')[0];
 	content.removeChild(directionGroupTemplate);
+	directionGroupTemplate.className = "direction-group"; // remove the template class
 
 	// Display the direction and times for each end destination.
 	for (destination in arrivalTimes) {
@@ -206,7 +221,7 @@ function generateInfoWindowContent(stationName) {
 
 		for (var timeIdx = 0; timeIdx < arrivalTimes[destination].length; timeIdx++) {
 			var newTimeElem = timeTemplate.cloneNode(true);
-			newTimeElem.textContent = minuteStringFromSeconds( arrivalTimes[destination][timeIdx] );
+			newTimeElem.textContent = minuteStringFromSeconds( arrivalTimes[destination][timeIdx] - elapsedSecs);
 			destGroup.appendChild(newTimeElem);
 		}
 		content.appendChild(destGroup);
@@ -216,7 +231,27 @@ function generateInfoWindowContent(stationName) {
 		content.removeChild(noDataElem);
 	}
 
-	return content.outerHTML;
+	return content;
+}
+
+// Update the station times without rebuilding the whole infoWindow tree.
+function updateInfoWindowArrivalTimes(stationName) {
+	var elapsedSecs = (Date.now() - scheduleFetchedAt)/1000;
+
+	var arrivalTimes = getUpcomingArrivalTimes(stationName);
+	var content = infoWindow.getContent();
+
+	var directionGroupElems = getAllElementsByClass(content, 'div', 'direction-group');
+	for (var groupIdx = 0; groupIdx < directionGroupElems.length; groupIdx++) {
+		var group = directionGroupElems[groupIdx];
+		var destination = getFirstElementByClass(group, 'p', 'destination-name').textContent;
+
+		var timeElems = getAllElementsByClass(group, 'p', 'destination-time');
+
+		for (var timeIdx = 0; timeIdx < arrivalTimes[destination].length; timeIdx++) {
+			timeElems[timeIdx].textContent = minuteStringFromSeconds( arrivalTimes[destination][timeIdx] - elapsedSecs);
+		}
+	}
 }
 
 // "destination" => [time 1 (in seconds), time 2,...]
@@ -245,6 +280,7 @@ function getUpcomingArrivalTimes(stationName) {
 }
 
 function minuteStringFromSeconds(totalSeconds) {
+	totalSeconds = totalSeconds.toFixed(0)
 	var sign = ""
 	if (totalSeconds < 0) {
 		sign = "-";

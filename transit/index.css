@@ -8,6 +8,7 @@ body { height: 100%; margin: 0; padding: 0 }
 
 .info-content {
 	font-family: Helvetica, Arial, sans-serif;
+	height: 170px;
 }
 
 .direction-group {

@@ -28,10 +28,19 @@ function calcHaversine(lat1, lon1, lat2, lon2) {
     return d*0.621371192; // convert from km to miles
 }
 
-function getFirstElementByClass(node, tagName, className) {
-	var matchingElems = node.getElementsByTagName(tagName);
+function getFirstElementByClass(parent, tagName, className) {
+	var matchingElems = parent.getElementsByTagName(tagName);
 	for (var i = 0; i < matchingElems.length; i++) {
 		if (matchingElems[i].className == className) return  matchingElems[i];
 	}
 	return null;
+}
+
+function getAllElementsByClass(parent, tagName, className) {
+	var matchingElems = parent.getElementsByTagName(tagName);
+	var matches = [];
+	for (var i = 0; i < matchingElems.length; i++) {
+		if (matchingElems[i].className == className) matches.push(matchingElems[i]);
+	};
+	return matches;
 }
