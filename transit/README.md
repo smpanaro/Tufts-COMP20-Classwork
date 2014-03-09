@@ -2,7 +2,7 @@
 
 This assignment displays a random MBTA line, including it's path and stations. It also uses the navigator.geolocation object to detect the users location and display it along the map along with the station nearest to the user.  
 
-This project has been tested in the latest Chrome and Firefox on OS X.
+This project has been tested in the latest Chrome and Firefox on OS X and Google Chrome and Mobile Safari on iOS.  
 
 ### What has been implemented?
 To my knowledge, everything has been correctly implemented. This includes requesting and parsing rodeo.json, displaying information based on user location and displaying the T line specified in rodeo.json.  
