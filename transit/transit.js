@@ -33,6 +33,8 @@ var userLoc;
 var debug = false;
 var debugLine = "orange";
 
+var enableTransitExtraFeatures = false;
+
 function onPageLoad() {
 	var mapOptions = {
 	  center: new google.maps.LatLng(42.3581, -71.0636),
@@ -51,6 +53,8 @@ function onPageLoad() {
 	});
 
 	getUserLocation(displayUser);
+
+	if (enableTransitExtraFeatures == true) { addTransitExtraFeatures(); }
 }
 
 function displayTLine(lineName) {
