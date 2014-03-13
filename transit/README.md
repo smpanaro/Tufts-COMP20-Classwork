@@ -5,7 +5,7 @@ This assignment displays a random MBTA line, including it's path and stations. I
 This project has been tested in the latest Chrome and Firefox on OS X and Google Chrome and Mobile Safari on iOS.  
 
 ### What has been implemented?
-To my knowledge, everything has been correctly implemented. This includes requesting and parsing rodeo.json, displaying information based on user location and displaying the T line specified in rodeo.json.  
+To my knowledge, everything has been correctly implemented. This includes requesting and parsing rodeo.json, displaying information based on user location and displaying the T line specified in rodeo.json. The occasional 500 errors from the API were handled by checking the status code of each request and retry the request if it failed (signified by a non-200 status code).    
 
 ### Who did you collaborate with?
 I did not collaborate with anyone on this assignment, however I used several online resources including Stack Overflow, Mozilla Developer Network's documentation and the examples provided on the class website. 
