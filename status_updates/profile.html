@@ -8,23 +8,50 @@
 <script type="text/javascript">
 	// Format a date as required for message display.
 	Date.prototype.getMessageDateFormatString =  function() {
+		var paddedMins = this.getMinutes();
+		if (paddedMins<10) {
+			paddedMins = "0" + paddedMins;
+		}
 		return (this.getMonth()+1) + "/" + this.getDate() + "/" + this.getFullYear() +
-				" " + this.getHours() + ":" + this.getMinutes();
+				" " + this.getHours() + ":" + paddedMins;
 	};
+
+	var storage = localStorage;
+	var messageKey = "fecesBookMessages";
+
+	function init() {
+		if (storage[messageKey]) {
+			var messages = JSON.parse(storage[messageKey]);
+			for (var i = 0; i < messages.length; i++) {
+				var msg = messages[i];
+				displayMessage(msg);
+			};
+		}
+		else {
+			storage[messageKey] = JSON.stringify([]);
+		}
+	}
 
 	function onTextFieldChanged() {
 		var textField = document.getElementById("msg");
 		var message = textField.value;
 		textField.value = ""; // Clear input box
 		var dateString = new Date().getMessageDateFormatString();
-		var newElemContent = dateString + " - " + message;
+		var msg = dateString + " - " + message;
+		displayMessage(msg);
 
+		var messages = JSON.parse(storage[messageKey]);
+		messages.push(msg);
+		storage[messageKey] = JSON.stringify(messages);
+	}
+
+	function displayMessage(msg) {
 		// We've created the text content, now add it.
 		var statusDiv = document.getElementById("status");
 		var newMessageElem = document.createElement("p");
-		newMessageElem.textContent = newElemContent;
+		newMessageElem.textContent = msg;
 		if (statusDiv.hasChildNodes()) {
-			statusDiv.insertBefore(newMessageElem, statusDiv.firstChild);	
+			statusDiv.insertBefore(newMessageElem, statusDiv.firstChild);
 		}
 		else {
 			statusDiv.appendChild(newMessageElem);
@@ -33,7 +60,7 @@
 </script>
 </head>
 
-<body>
+<body onload="init()">
 	<h1>Fecebook</h1>
 	<div id="nav">
 		<ul>
