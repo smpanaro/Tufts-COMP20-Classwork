@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script>
+    // To be put on my server to fetch and clean the leaderboard
+    function getQueryParams(qs) {
+        qs = qs.split("+").join(" ");
+
+        var params = {}, tokens,
+            re = /[?&]?([^=]+)=([^&]*)/g;
+
+        while (tokens = re.exec(qs)) {
+            params[decodeURIComponent(tokens[1])]
+                = decodeURIComponent(tokens[2]);
+        }
+
+        return params;
+    }
+
+    function clean(htmlstr) {
+        // Clean various weird injections so the page displays lol.
+
+        // Remove Mings injection.
+        htmlstr = htmlstr.replace(/window\.location="https:\/\/www\.youtube\.com\/watch\?v=b4810hS8weQ"/g, "replaced mings youtube");
+
+        // Remove my attempts to kill it clientside.
+        htmlstr = htmlstr.replace(/document\.body\.innerHTML = /g, "//removed document.body.innerHTML set");
+        return htmlstr;
+    }
+
+    function replacePageWithCleanPage() {
+        var urlparam = "http://ancient-crag-7837.herokuapp.com/";
+        if (urlparam === undefined) return; // don't blow up if the url param isn't there (writing undefined to document is bad)
+        $.get(urlparam, function(data, status, jxqhr) {
+            var cleanHTML = clean(data);
+            cleanHTML = "uh oh this shouldn't be here" + cleanHTML;
+            document.open();
+            document.write(cleanHTML);
+            document.close();
+        });
+    }
+
+
+    </script>
+</head>
+
+<body onload="replacePageWithCleanPage()">
+404 Page Not Found
+</body>
+</html>
