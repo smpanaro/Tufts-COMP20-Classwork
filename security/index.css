@@ -4,3 +4,7 @@ p, ul, ol {
 img {
 	width:48%;
 }
+
+.wide-image {
+	width:98%;
+}
